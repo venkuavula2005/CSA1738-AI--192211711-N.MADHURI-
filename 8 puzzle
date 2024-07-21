@@ -1,0 +1,115 @@
+import heapq
+
+class PuzzleState:
+    goal_state = (1, 2, 3, 4, 5, 6, 7, 8, 0)  # Goal state of the puzzle
+
+    def __init__(self, board, parent=None, move="Initial"):
+        self.board = tuple(board)
+        self.parent = parent
+        self.move = move
+        self.depth = 0
+        if parent:
+            self.depth = parent.depth + 1
+
+    def __eq__(self, other):
+        return self.board == other.board
+
+    def __hash__(self):
+        return hash(self.board)
+
+    def __lt__(self, other):
+        return self.depth < other.depth
+
+    def find_blank(self):
+        return self.board.index(0)
+
+    def generate_children(self):
+        blank_index = self.find_blank()
+        possible_moves = []
+        if blank_index not in [0, 1, 2]:  # Can move up
+            possible_moves.append(-3)
+        if blank_index not in [6, 7, 8]:  # Can move down
+            possible_moves.append(3)
+        if blank_index not in [0, 3, 6]:  # Can move left
+            possible_moves.append(-1)
+        if blank_index not in [2, 5, 8]:  # Can move right
+            possible_moves.append(1)
+
+        children = []
+        for move in possible_moves:
+            new_board = list(self.board)
+            new_board[blank_index], new_board[blank_index + move] = new_board[blank_index + move], new_board[blank_index]
+            children.append(PuzzleState(new_board, self, move))
+        return children
+
+    def is_goal(self):
+        return self.board == self.goal_state
+
+    def manhattan_distance(self):
+        distance = 0
+        for i in range(1, 9):
+            current_position = self.board.index(i)
+            goal_position = self.goal_state.index(i)
+            distance += abs(current_position % 3 - goal_position % 3) + abs(current_position // 3 - goal_position // 3)
+        return distance
+
+    def print_moves(self):
+        if self.parent:
+            self.parent.print_moves()
+        if self.move == "Initial":
+            print("Initial configuration:")
+        else:
+            print(f"Move {self.move}:")
+        self.print_board()
+
+    def print_board(self):
+        for i in range(0, 9, 3):
+            print(self.board[i:i+3])
+        print()
+
+def solve_puzzle(initial_state):
+    frontier = []
+    heapq.heappush(frontier, initial_state)
+    visited = set()
+    visited.add(initial_state)
+
+    while frontier:
+        state = heapq.heappop(frontier)
+
+        if state.is_goal():
+            state.print_moves()
+            print("Solved!")
+            return True
+
+        for child in state.generate_children():
+            if child not in visited:
+                heapq.heappush(frontier, child)
+                visited.add(child)
+
+    return False
+
+if __name__ == "__main__":
+    initial_board = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 0, 8]
+    ]
+
+     flat_initial_board = [item for sublist in initial_board for item in sublist]
+    initial_state = PuzzleState(flat_initial_board)
+    
+    solve_puzzle(initial_state)
+
+    OUTPUT:
+     
+Initial configuration:
+(1, 2, 3)
+(4, 5, 6)
+(7, 0, 8)
+
+Move 1:
+(1, 2, 3)
+(4, 5, 6)
+(7, 8, 0)
+
+Solved!
