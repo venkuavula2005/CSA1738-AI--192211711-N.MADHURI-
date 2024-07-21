@@ -1,0 +1,79 @@
+from collections import deque
+
+def is_valid_state(state):
+    missionaries_left, cannibals_left, boat = state[:3]
+    missionaries_right, cannibals_right = state[3:]
+    
+    if missionaries_left < 0 or cannibals_left < 0 or missionaries_right < 0 or cannibals_right < 0:
+        return False
+    if missionaries_left > 0 and missionaries_left < cannibals_left:
+        return False
+    if missionaries_right > 0 and missionaries_right < cannibals_right:
+        return False
+    return True
+
+def get_successors(state):
+    successors = []
+    missionaries_left, cannibals_left, boat, missionaries_right, cannibals_right = state
+    if boat == 'left':
+        moves = [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]
+        for m, c in moves:
+            new_state = (missionaries_left - m, cannibals_left - c, 'right', missionaries_right + m, cannibals_right + c)
+            if is_valid_state(new_state):
+                successors.append(new_state)
+    else:
+        moves = [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]
+        for m, c in moves:
+            new_state = (missionaries_left + m, cannibals_left + c, 'left', missionaries_right - m, cannibals_right - c)
+            if is_valid_state(new_state):
+                successors.append(new_state)
+    return successors
+
+def bfs(initial_state, goal_state):
+    queue = deque([(initial_state, [])])
+    visited = set()
+
+    while queue:
+        current_state, path = queue.popleft()
+        if current_state in visited:
+            continue
+
+        visited.add(current_state)
+        path = path + [current_state]
+
+        if current_state == goal_state:
+            return path
+
+        for successor in get_successors(current_state):
+            if successor not in visited:
+                queue.append((successor, path))
+
+    return None
+
+# Initial state: (missionaries_left, cannibals_left, boat_position, missionaries_right, cannibals_right)
+initial_state = (3, 3, 'left', 0, 0)
+goal_state = (0, 0, 'right', 3, 3)
+
+solution = bfs(initial_state, goal_state)
+
+if solution:
+    print("Solution found:")
+    for step in solution:
+        print(step)
+else:
+    print("No solution found.")
+
+OUTPUT:
+Solution found:
+(3, 3, 'left', 0, 0)
+(3, 1, 'right', 0, 2)
+(3, 2, 'left', 0, 1)
+(3, 0, 'right', 0, 3)
+(3, 1, 'left', 0, 2)
+(1, 1, 'right', 2, 2)
+(2, 2, 'left', 1, 1)
+(0, 2, 'right', 3, 1)
+(0, 3, 'left', 3, 0)
+(0, 1, 'right', 3, 2)
+(1, 1, 'left', 2, 2)
+(0, 0, 'right', 3, 3)
