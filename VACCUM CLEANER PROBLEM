@@ -1,0 +1,90 @@
+from collections import deque
+
+# Define the possible actions
+ACTIONS = ["UP", "DOWN", "LEFT", "RIGHT", "CLEAN"]
+
+# Define the problem environment
+class VacuumCleaner:
+    def __init__(self, grid, start):
+        self.grid = grid
+        self.start = start
+        self.rows = len(grid)
+        self.cols = len(grid[0])
+
+    def is_goal_state(self, state):
+        for row in state[0]:
+            if 1 in row:
+                return False
+        return True
+
+    def get_successors(self, state):
+        grid, position = state
+        row, col = position
+        successors = []
+
+        for action in ACTIONS:
+            new_grid = [row[:] for row in grid]
+            new_row, new_col = row, col
+
+            if action == "UP" and row > 0:
+                new_row -= 1
+            elif action == "DOWN" and row < self.rows - 1:
+                new_row += 1
+            elif action == "LEFT" and col > 0:
+                new_col -= 1
+            elif action == "RIGHT" and col < self.cols - 1:
+                new_col += 1
+            elif action == "CLEAN":
+                new_grid[row][col] = 0
+
+            new_state = (new_grid, (new_row, new_col))
+            if new_state != state:
+                successors.append((new_state, action))
+
+        return successors
+
+    def bfs(self):
+        initial_state = (self.grid, self.start)
+        queue = deque([(initial_state, [])])
+        visited = set()
+
+        while queue:
+            current_state, path = queue.popleft()
+
+            if self.is_goal_state(current_state):
+                return path
+
+            grid, position = current_state
+            state_key = (tuple(map(tuple, grid)), position)
+
+            if state_key in visited:
+                continue
+
+            visited.add(state_key)
+
+            for successor, action in self.get_successors(current_state):
+                queue.append((successor, path + [action]))
+
+        return None
+
+# Example usage
+grid = [
+    [1, 0, 1],
+    [0, 1, 0],
+    [1, 1, 1]
+]
+start_position = (1, 1)  # Starting at the center of the grid
+
+vacuum_cleaner = VacuumCleaner(grid, start_position)
+solution = vacuum_cleaner.bfs()
+
+if solution:
+    print("Solution found:")
+    print(solution)
+else:
+    print("No solution found.")
+
+ OUTPUT:
+
+Solution found:
+['CLEAN', 'UP', 'LEFT', 'CLEAN', 'DOWN', 'DOWN', 'CLEAN', 'RIGHT', 'CLEAN', 'RIGHT', 'CLEAN', 'UP', 'UP', 'CLEAN']
