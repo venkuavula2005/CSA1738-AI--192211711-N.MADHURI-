@@ -1,0 +1,79 @@
+from collections import deque
+
+# Function to perform BFS to find the shortest path to reach the target state
+def water_jug_problem(capacity_a, capacity_b, target):
+    # Using BFS to find the shortest path to reach the target state
+    queue = deque()
+    visited = set()
+    queue.append((0, 0))  # Initial state: (0, 0) - both jugs are empty
+    visited.add((0, 0))
+    parent = {}  # To store the parent states to reconstruct the path
+    
+    while queue:
+        current_state = queue.popleft()
+        a, b = current_state
+        
+        # Check if we reached the target state
+        if a == target or b == target:
+            path = []
+            # Reconstruct the path by tracing back through parent states
+            while current_state != (0, 0):
+                path.append(current_state)
+                current_state = parent[current_state]
+            path.append((0, 0))  # Add the initial state
+            path.reverse()  # Reverse the path to get the correct order
+            return path
+        
+        # Generate all possible next states
+        next_states = []
+        
+        # Fill jug A
+        next_states.append((capacity_a, b))
+        # Fill jug B
+        next_states.append((a, capacity_b))
+        # Empty jug A
+        next_states.append((0, b))
+        # Empty jug B
+        next_states.append((a, 0))
+        # Pour from jug A to jug B
+        pour_a_to_b = min(a, capacity_b - b)
+        next_states.append((a - pour_a_to_b, b + pour_a_to_b))
+        # Pour from jug B to jug A
+        pour_b_to_a = min(b, capacity_a - a)
+        next_states.append((a + pour_b_to_a, b - pour_b_to_a))
+        
+        # Visit all valid next states
+        for state in next_states:
+            if state not in visited:
+                visited.add(state)
+                queue.append(state)
+                parent[state] = current_state
+    
+    # If no solution found
+    return None
+
+def print_solution(path):
+    if path is None:
+        print("No solution found.")
+    else:
+        print("Solution:")
+        for state in path:
+            print(f"Jug A: {state[0]}, Jug B: {state[1]}")
+        print(f"Reached the target amount.")
+
+if __name__ == "__main__":
+    capacity_a = 4  # Capacity of jug A
+    capacity_b = 3  # Capacity of jug B
+    target = 2      # Target amount of water to measure
+    
+    path = water_jug_problem(capacity_a, capacity_b, target)
+    print_solution(path)
+
+    OUTPUT:
+Solution:
+Jug A: 0, Jug B: 0
+Jug A: 0, Jug B: 3
+Jug A: 3, Jug B: 0
+Jug A: 3, Jug B: 3
+Jug A: 4, Jug B: 2
+Reached the target amount.
