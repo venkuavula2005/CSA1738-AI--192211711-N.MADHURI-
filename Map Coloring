@@ -1,0 +1,49 @@
+def is_valid_assignment(graph, colors, node, color):
+    # Check if any adjacent node has the same color
+    for neighbor in graph[node]:
+        if colors[neighbor] == color:
+            return False
+    return True
+
+def map_coloring(graph, colors, node_list, color_list, index):
+    if index == len(node_list):
+        return True
+
+    node = node_list[index]
+    for color in color_list:
+        if is_valid_assignment(graph, colors, node, color):
+            colors[node] = color
+            if map_coloring(graph, colors, node_list, color_list, index + 1):
+                return True
+            # Backtrack
+            colors[node] = None
+
+    return False
+
+def print_solution(colors):
+    print("Solution:")
+    for node, color in colors.items():
+        print(f"Node {node} -> Color {color}")
+
+if __name__ == "__main__":
+    # Define the graph as an adjacency list
+    graph = {
+        'A': ['B', 'C', 'D'],
+        'B': ['A', 'C', 'E'],
+        'C': ['A', 'B', 'D', 'F'],
+        'D': ['A', 'C', 'F'],
+        'E': ['B', 'F'],
+        'F': ['C', 'D', 'E']
+    }
+    
+    # List of colors to use
+    color_list = ['Red', 'Green', 'Blue']
+    
+    # Initialize colors dictionary and node list
+    colors = {node: None for node in graph}
+    node_list = list(graph.keys())
+    
+    if map_coloring(graph, colors, node_list, color_list, 0):
+        print_solution(colors)
+    else:
+        print("No solution found.")
