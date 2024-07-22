@@ -1,0 +1,65 @@
+import heapq
+
+def a_star(graph, start, goal):
+    # Priority queue to store the nodes to explore
+    open_list = []
+    heapq.heappush(open_list, (0, start))
+
+    # Dictionaries to store the cost and the path
+    g_costs = {start: 0}
+    f_costs = {start: heuristic(start, goal)}
+    came_from = {start: None}
+
+    while open_list:
+        current = heapq.heappop(open_list)[1]
+
+        if current == goal:
+            return reconstruct_path(came_from, current)
+
+        for neighbor, cost in graph[current].items():
+            tentative_g_cost = g_costs[current] + cost
+            if neighbor not in g_costs or tentative_g_cost < g_costs[neighbor]:
+                g_costs[neighbor] = tentative_g_cost
+                f_cost = tentative_g_cost + heuristic(neighbor, goal)
+                f_costs[neighbor] = f_cost
+                heapq.heappush(open_list, (f_cost, neighbor))
+                came_from[neighbor] = current
+
+    return None
+
+def heuristic(node, goal):
+    # Example heuristic function (Euclidean distance)
+    # Modify this based on your specific problem
+    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+
+def reconstruct_path(came_from, current):
+    path = []
+    while current is not None:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+    return path
+
+# Example usage:
+if __name__ == "__main__":
+    # Define the graph as an adjacency list with distances
+    graph = {
+        (0, 0): {(0, 1): 1, (1, 0): 1},
+        (0, 1): {(0, 0): 1, (1, 1): 1, (0, 2): 1},
+        (0, 2): {(0, 1): 1, (1, 2): 1},
+        (1, 0): {(0, 0): 1, (1, 1): 1, (2, 0): 1},
+        (1, 1): {(1, 0): 1, (0, 1): 1, (1, 2): 1, (2, 1): 1},
+        (1, 2): {(1, 1): 1, (0, 2): 1, (2, 2): 1},
+        (2, 0): {(1, 0): 1, (2, 1): 1},
+        (2, 1): {(2, 0): 1, (1, 1): 1, (2, 2): 1},
+        (2, 2): {(2, 1): 1, (1, 2): 1},
+    }
+
+    start = (0, 0)
+    goal = (2, 2)
+    path = a_star(graph, start, goal)
+
+    if path:
+        print("Path found:", path)
+    else:
+        print("No path found.")
